@@ -1,6 +1,6 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="16.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.props')" />
+  <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.props" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.props')" />
   <Import Project="packages\OpenXR.Headers.1.0.10.2\build\native\OpenXR.Headers.props" Condition="Exists('packages\OpenXR.Headers.1.0.10.2\build\native\OpenXR.Headers.props')" />
   <Import Project="packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.props" Condition="Exists('packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.props')" />
   <PropertyGroup>
@@ -73,9 +73,21 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</LinkIncremental>
     <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">true</GenerateManifest>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <IncludePath>.\include;$(IncludePath)</IncludePath>
+    <LibraryPath>.\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <IncludePath>.\include;$(IncludePath)</IncludePath>
+    <LibraryPath>.\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
+    <IncludePath>.\include;$(IncludePath)</IncludePath>
+    <LibraryPath>.\lib;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;.\SampleShared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\SampleShared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(WindowsSDK_UnionMetadataPath)</AdditionalUsingDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -109,8 +121,8 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>d2d1.lib;d3d11.lib;dxgi.lib;dwrite.lib;windowscodecs.lib;pathcch.lib;Mswsock.lib;mfreadwrite.lib;Mfplat.lib;mfuuid.lib;ntdll.lib;Secur32.lib;crypt32.lib;secur32.lib;avrt.lib;WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;glu32.lib;opengl32.lib;d2d1.lib;d3d11.lib;dxguid.lib;dxgi.lib;dwrite.lib;windowscodecs.lib;pathcch.lib;Mswsock.lib;mfreadwrite.lib;Mfplat.lib;mfuuid.lib;ntdll.lib;Secur32.lib;crypt32.lib;secur32.lib;avrt.lib;WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>.\lib\Debug;.\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64 /PDBALTPATH:$(TargetName).pdb</AdditionalOptions>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -126,7 +138,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;.\SampleShared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\packages\OpenXR.Headers.1.0.10.2\include;.\include\GL;.;.\SampleShared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(WindowsSDK_UnionMetadataPath)</AdditionalUsingDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -161,8 +173,8 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>d2d1.lib;d3d11.lib;dxgi.lib;dwrite.lib;windowscodecs.lib;pathcch.lib;Mswsock.lib;mfreadwrite.lib;Mfplat.lib;mfuuid.lib;ntdll.lib;Secur32.lib;crypt32.lib;secur32.lib;avrt.lib;WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;glu32.lib;opengl32.lib;d2d1.lib;d3d11.lib;dxguid.lib;dxgi.lib;dwrite.lib;windowscodecs.lib;pathcch.lib;Mswsock.lib;mfreadwrite.lib;Mfplat.lib;mfuuid.lib;ntdll.lib;Secur32.lib;crypt32.lib;secur32.lib;avrt.lib;WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>.\lib\Debug;.\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64 /PDBALTPATH:$(TargetName).pdb</AdditionalOptions>
       <GenerateDebugInformation>DebugFull</GenerateDebugInformation>
       <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
@@ -176,7 +188,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'">
     <ClCompile>
-      <AdditionalIncludeDirectories>.;.\SampleShared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>.\packages\OpenXR.Headers.1.0.10.2\include;.\include\GL;.;.\SampleShared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalOptions>%(AdditionalOptions) /await</AdditionalOptions>
       <AdditionalUsingDirectories>$(VCIDEInstallDir)vcpackages;$(WindowsSDK_UnionMetadataPath)</AdditionalUsingDirectories>
       <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
@@ -209,8 +221,8 @@
       <ProxyFileName>%(Filename)_p.c</ProxyFileName>
     </Midl>
     <Link>
-      <AdditionalDependencies>d2d1.lib;d3d11.lib;dxgi.lib;dwrite.lib;windowscodecs.lib;pathcch.lib;Mswsock.lib;mfreadwrite.lib;Mfplat.lib;mfuuid.lib;ntdll.lib;Secur32.lib;crypt32.lib;secur32.lib;avrt.lib;WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>glew32s.lib;glu32.lib;opengl32.lib;d2d1.lib;d3d11.lib;dxguid.lib;dxgi.lib;dwrite.lib;windowscodecs.lib;pathcch.lib;Mswsock.lib;mfreadwrite.lib;Mfplat.lib;mfuuid.lib;ntdll.lib;Secur32.lib;crypt32.lib;secur32.lib;avrt.lib;WindowsApp.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>.\lib\Debug;.\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalOptions>%(AdditionalOptions) /machine:x64 /PDBALTPATH:$(TargetName).pdb</AdditionalOptions>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
       <GenerateDebugInformation>true</GenerateDebugInformation>
@@ -224,17 +236,24 @@
       <LinkLibraryDependencies>false</LinkLibraryDependencies>
     </ProjectReference>
   </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>.\packages\OpenXR.Headers.1.0.10.2\include;.\include\GL;.;.\SampleShared;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include=".\OpenXrProgram.cpp" />
+    <ClCompile Include="OpenGLProgram.cpp" />
+    <ClCompile Include="OpenXrProgram.cpp" />
     <ClInclude Include=".\OpenXrProgram.h" />
     <ClInclude Include=".\pch.h" />
     <ClCompile Include=".\pch.cpp" />
     <ClCompile Include=".\App.cpp" />
-    <ClCompile Include=".\CubeGraphics.cpp" />
+    <ClCompile Include="CubeGraphics.cpp" />
     <ClCompile Include=".\DxUtility.cpp" />
     <ClInclude Include=".\DxUtility.h" />
     <ClCompile Include=".\SampleShared\CommandLineUtility.cpp" />
     <ClCompile Include=".\SampleShared\SampleWindowWin32.cpp" />
+    <ClInclude Include="OpenGLProgram.h" />
     <Image Include=".\Assets\LockScreenLogo.scale-200.png">
     </Image>
     <Image Include=".\Assets\SplashScreen.scale-200.png">
@@ -253,12 +272,21 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <AppxManifest Include=".\Package.appxmanifest" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
     <Import Project="packages\OpenXR.Headers.1.0.10.2\build\native\OpenXR.Headers.targets" Condition="Exists('packages\OpenXR.Headers.1.0.10.2\build\native\OpenXR.Headers.targets')" />
     <Import Project="packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.targets" Condition="Exists('packages\OpenXR.Loader.1.0.10.2\build\native\OpenXR.Loader.targets')" />
-    <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.200729.8\build\native\Microsoft.Windows.CppWinRT.targets')" />
+    <Import Project="packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.targets" Condition="Exists('packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.targets')" />
     <Import Project="packages\Microsoft.Holographic.Remoting.OpenXr.2.6.2\build\native\Microsoft.Holographic.Remoting.OpenXr.targets" Condition="Exists('packages\Microsoft.Holographic.Remoting.OpenXr.2.6.2\build\native\Microsoft.Holographic.Remoting.OpenXr.targets')" />
   </ImportGroup>
+  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
+    <PropertyGroup>
+      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
+    </PropertyGroup>
+    <Error Condition="!Exists('packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.props')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.props'))" />
+    <Error Condition="!Exists('packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.Windows.CppWinRT.2.0.210806.1\build\native\Microsoft.Windows.CppWinRT.targets'))" />
+    <Error Condition="!Exists('packages\Microsoft.Holographic.Remoting.OpenXr.2.6.2\build\native\Microsoft.Holographic.Remoting.OpenXr.targets')" Text="$([System.String]::Format('$(ErrorText)', 'packages\Microsoft.Holographic.Remoting.OpenXr.2.6.2\build\native\Microsoft.Holographic.Remoting.OpenXr.targets'))" />
+  </Target>
 </Project>

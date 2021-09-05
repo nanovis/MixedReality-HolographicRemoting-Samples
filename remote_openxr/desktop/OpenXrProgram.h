@@ -17,8 +17,10 @@
 #pragma once
 
 #include <SampleShared/CommandLineUtility.h>
+#include"OpenGLProgram.h"
 
 namespace sample {
+
     struct Cube {
         xr::SpaceHandle Space{};
         std::optional<XrPosef> PoseInSpace{}; // Relative pose in cube Space. Default to identity.
@@ -26,17 +28,21 @@ namespace sample {
         XrVector3f colorFilter{1.0f, 1.0f, 1.0f};
         XrPosef PoseInAppSpace = xr::math::Pose::Identity(); // Cube pose in app space that gets updated every frame
     };
-
     struct IOpenXrProgram {
         virtual ~IOpenXrProgram() = default;
         virtual void Run() = 0;
     };
 
     struct IGraphicsPluginD3D11 {
+
+        virtual OpenGLProgram* getOpenGLProgramPtr() = 0;
         virtual ~IGraphicsPluginD3D11() = default;
 
         // Create an instance of this graphics api for the provided instance and systemId.
-        virtual ID3D11Device* InitializeDevice(LUID adapterLuid, const std::vector<D3D_FEATURE_LEVEL>& featureLevels) = 0;
+        virtual ID3D11Device* InitializeDevice(LUID adapterLuid,
+                                               const std::vector<D3D_FEATURE_LEVEL>& featureLevels) = 0;
+
+        virtual winrt::com_ptr<ID3D11DeviceContext> getDeviceContext() = 0;
 
         // List of color pixel formats supported by this app.
         virtual const std::vector<DXGI_FORMAT>& SupportedColorFormats() const = 0;
@@ -50,14 +56,19 @@ namespace sample {
                                 ID3D11Texture2D* colorTexture,
                                 DXGI_FORMAT depthSwapchainFormat,
                                 ID3D11Texture2D* depthTexture,
-                                const std::vector<const sample::Cube*>& cubes) = 0;
+                                const std::vector<const sample::Cube*>& cubes,
+                                ID3D11Texture2D* OGLColorTexture) = 0;
 
         virtual void ClearView(ID3D11Texture2D* colorTexture, const float renderTargetClearColor[4]) = 0;
+   
     };
+
 
     std::unique_ptr<IGraphicsPluginD3D11> CreateCubeGraphics();
     std::unique_ptr<IOpenXrProgram> CreateOpenXrProgram(std::string applicationName,
                                                         std::unique_ptr<IGraphicsPluginD3D11> graphicsPlugin,
                                                         const sample::AppOptions& options);
+
+
 
 } // namespace sample

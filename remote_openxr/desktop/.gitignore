@@ -1,0 +1,18 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/VSWorkspaceState.json
+/.vs/slnx.sqlite
+/.vs/SampleRemoteOpenXR/v16/ipch/AutoPCH/cd312480d7055013/CUBEGRAPHICS.ipch
+/.vs/SampleRemoteOpenXR/v16/ipch/AutoPCH/9d6419614a780101/OPENXRPROGRAM.ipch
+/.vs/SampleRemoteOpenXR/v16/ipch/AutoPCH/7289dec3720a597e/OPENGLPROGRAM.ipch
+/.vs/SampleRemoteOpenXR/v16/ipch/AutoPCH/2d31b59f17a7ed6c/APP.ipch
+/.vs/SampleRemoteOpenXR/v16/Browse.VC.opendb
+/.vs/SampleRemoteOpenXR/v16/Browse.VC.db-wal
+/.vs/SampleRemoteOpenXR/v16/Browse.VC.db-shm
+/.vs/SampleRemoteOpenXR/v16/Browse.VC.db
+/.vs/SampleRemoteOpenXR/v16/.suo
+/.vs/Ruwayda/v16/Browse.VC.db
+/.vs/Ruwayda/v16/.suo
+/.vs/ProjectSettings.json

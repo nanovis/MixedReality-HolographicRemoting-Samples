@@ -3,24 +3,54 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29806.167
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{106A4908-2E14-3378-9618-10668523A8A8}") = "SampleRemoteOpenXR", "SampleRemoteOpenXR.vcxproj", "{BDD6541B-7845-3E17-B3C6-6011A4343E9E}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SampleRemoteOpenXR", "SampleRemoteOpenXR.vcxproj", "{BDD6541B-7845-3E17-B3C6-6011A4343E9E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Debug|ARM64 = Debug|ARM64
 		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Profile|ARM = Profile|ARM
+		Profile|ARM64 = Profile|ARM64
+		Profile|x64 = Profile|x64
+		Profile|x86 = Profile|x86
+		Release|ARM = Release|ARM
+		Release|ARM64 = Release|ARM64
 		Release|x64 = Release|x64
+		Release|x86 = Release|x86
+		RelWithDebInfo|ARM = RelWithDebInfo|ARM
+		RelWithDebInfo|ARM64 = RelWithDebInfo|ARM64
 		RelWithDebInfo|x64 = RelWithDebInfo|x64
+		RelWithDebInfo|x86 = RelWithDebInfo|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.Debug|ARM.ActiveCfg = Debug|x64
+		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.Debug|ARM64.ActiveCfg = Debug|x64
 		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.Debug|x64.ActiveCfg = Debug|x64
 		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.Debug|x64.Build.0 = Debug|x64
 		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.Debug|x64.Deploy.0 = Debug|x64
+		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.Debug|x86.ActiveCfg = Debug|x64
+		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.Profile|ARM.ActiveCfg = RelWithDebInfo|x64
+		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.Profile|ARM.Build.0 = RelWithDebInfo|x64
+		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.Profile|ARM64.ActiveCfg = RelWithDebInfo|x64
+		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.Profile|ARM64.Build.0 = RelWithDebInfo|x64
+		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.Profile|x64.ActiveCfg = RelWithDebInfo|x64
+		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.Profile|x64.Build.0 = RelWithDebInfo|x64
+		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.Profile|x86.ActiveCfg = RelWithDebInfo|x64
+		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.Profile|x86.Build.0 = RelWithDebInfo|x64
+		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.Release|ARM.ActiveCfg = Release|x64
+		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.Release|ARM64.ActiveCfg = Release|x64
 		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.Release|x64.ActiveCfg = Release|x64
 		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.Release|x64.Build.0 = Release|x64
 		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.Release|x64.Deploy.0 = Release|x64
+		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.Release|x86.ActiveCfg = Release|x64
+		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.RelWithDebInfo|ARM.ActiveCfg = RelWithDebInfo|x64
+		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.RelWithDebInfo|ARM64.ActiveCfg = RelWithDebInfo|x64
 		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.RelWithDebInfo|x64.ActiveCfg = RelWithDebInfo|x64
 		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.RelWithDebInfo|x64.Build.0 = RelWithDebInfo|x64
 		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.RelWithDebInfo|x64.Deploy.0 = RelWithDebInfo|x64
+		{BDD6541B-7845-3E17-B3C6-6011A4343E9E}.RelWithDebInfo|x86.ActiveCfg = RelWithDebInfo|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -29,4 +59,3 @@ Global
 		SolutionGuid = {76313AE8-8A6B-4837-8649-81C867BF70B2}
 	EndGlobalSection
 EndGlobal
-

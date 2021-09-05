@@ -15,6 +15,7 @@
 
 #include <future>
 
+
 #include <dxgi1_2.h>
 
 namespace {
@@ -92,7 +93,7 @@ namespace {
         desc.Stereo = false;
         desc.SampleDesc.Count = 1;
         desc.SampleDesc.Quality = 0;
-        desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+        desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT ;
         desc.BufferCount = 2;
         desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
         desc.Flags = 0;
@@ -143,7 +144,8 @@ namespace sample {
 
         m_hWnd = hWndFuture.get();
         m_swapchain = CreateSwapchain(m_hWnd, device);
-
+       
+      //  m_swapchainOGL = CreateSwapchain(NULL, device);
         ShowWindow(m_hWnd, SW_SHOWNORMAL);
     }
 
@@ -153,10 +155,16 @@ namespace sample {
     }
 
     ID3D11Texture2D* SampleWindowWin32::GetNextSwapchainTexture() {
-        ID3D11Texture2D* texture;
-        m_swapchain->GetBuffer(0, IID_PPV_ARGS(&texture));
+         ID3D11Texture2D* texture;
+         m_swapchain->GetBuffer(0, IID_PPV_ARGS(&texture));
+        
+         return texture;
+    }
+    ID3D11Texture2D* SampleWindowWin32::GetOpenGLSwapchainTexture() {
+        ID3D11Texture2D* dxColorbuffer;
 
-        return texture;
+      m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&dxColorbuffer);
+      return dxColorbuffer;
     }
 
     void SampleWindowWin32::PresentSwapchain() {

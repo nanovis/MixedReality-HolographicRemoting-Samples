@@ -17,7 +17,7 @@
 #include "pch.h"
 #include "OpenXrProgram.h"
 #include "DxUtility.h"
-
+#include"OpenGLProgram.h"
 #include <filesystem>
 #include <fstream>
 #include <queue>
@@ -25,7 +25,6 @@
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 #include <SampleShared/SampleWindowWin32.h>
 #endif
-
 // #define ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
 
 namespace {
@@ -35,9 +34,13 @@ namespace {
         ImplementOpenXrProgram(std::string applicationName,
                                std::unique_ptr<sample::IGraphicsPluginD3D11> graphicsPlugin,
                                const sample::AppOptions& options)
+
             : m_applicationName(std::move(applicationName))
             , m_graphicsPlugin(std::move(graphicsPlugin))
-            , m_options(options) {
+            , m_options(options)
+           
+
+        {
         }
 
         void Run() override {
@@ -59,6 +62,31 @@ namespace {
 
             CreateWindowWin32();
 
+            
+            //==============================================================================
+            // 1- create Directx texture to shared it with opengl
+            // Setup texture description .
+            D3D11_TEXTURE2D_DESC textureDesc;
+            textureDesc.Height = 1000;
+            textureDesc.Width = 1000;
+            textureDesc.MipLevels = 0;
+            textureDesc.ArraySize = 1;
+            textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+            textureDesc.SampleDesc.Count = 1;
+            textureDesc.SampleDesc.Quality = 0;
+            textureDesc.Usage = D3D11_USAGE_DEFAULT;
+            textureDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_RENDER_TARGET;
+            textureDesc.CPUAccessFlags = 0;
+            textureDesc.MiscFlags = D3D11_RESOURCE_MISC_GENERATE_MIPS;
+            HRESULT hResult = m_device->CreateTexture2D(&textureDesc, NULL, &m_dxColorbuffer);
+            if (FAILED(hResult)) {
+                exit(0);
+            }
+            // 2- Start to initate openGL
+            m_graphicsPlugin->getOpenGLProgramPtr()->initOpenGLProgram(m_device,m_dxColorbuffer);
+            //=============================================================================
+            MSG msg;
+
             bool requestRestart = false;
             do {
                 while (true) {
@@ -68,7 +96,15 @@ namespace {
                     if (exitRenderLoop) {
                         break;
                     }
+                    // To activate OpenGL window
+                    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+                        TranslateMessage(&msg);
+                        DispatchMessage(&msg);
+                    }
 
+                    if (msg.message == WM_QUIT) {
+                        break;
+                    }
                     if (m_sessionRunning) {
 #ifdef ENABLE_CUSTOM_DATA_CHANNEL_SAMPLE
                         auto timeDelta = std::chrono::high_resolution_clock::now() - m_customDataChannelSendTime;
@@ -245,7 +281,7 @@ namespace {
             createInfo.enabledExtensionCount = (uint32_t)enabledExtensions.size();
             createInfo.enabledExtensionNames = enabledExtensions.data();
 
-            createInfo.applicationInfo = {"SampleRemoteOpenXr", 1, "", 1, XR_CURRENT_API_VERSION};
+            createInfo.applicationInfo = {"SampleRemoteOpenGL", 1, "", 1, XR_CURRENT_API_VERSION};
             strcpy_s(createInfo.applicationInfo.applicationName, m_applicationName.c_str());
 
             CHECK_XRCMD(xrCreateInstance(&createInfo, m_instance.Put()));
@@ -346,16 +382,7 @@ namespace {
                     CHECK_XRCMD(xrCreateAction(m_actionSet.Get(), &actionInfo, m_vibrateAction.Put()));
                 }
 
-                // Create an input action to exit the session.
-                {
-                    XrActionCreateInfo actionInfo{XR_TYPE_ACTION_CREATE_INFO};
-                    actionInfo.actionType = XR_ACTION_TYPE_BOOLEAN_INPUT;
-                    strcpy_s(actionInfo.actionName, "exit_session");
-                    strcpy_s(actionInfo.localizedActionName, "Exit session");
-                    actionInfo.countSubactionPaths = (uint32_t)m_subactionPaths.size();
-                    actionInfo.subactionPaths = m_subactionPaths.data();
-                    CHECK_XRCMD(xrCreateAction(m_actionSet.Get(), &actionInfo, m_exitAction.Put()));
-                }
+              
             }
 
             // Set up suggested bindings for the simple_controller profile.
@@ -363,12 +390,9 @@ namespace {
                 std::vector<XrActionSuggestedBinding> bindings;
                 bindings.push_back({m_placeAction.Get(), GetXrPath("/user/hand/right/input/select/click")});
                 bindings.push_back({m_placeAction.Get(), GetXrPath("/user/hand/left/input/select/click")});
-                bindings.push_back({m_poseAction.Get(), GetXrPath("/user/hand/right/input/grip/pose")});
-                bindings.push_back({m_poseAction.Get(), GetXrPath("/user/hand/left/input/grip/pose")});
-                bindings.push_back({m_vibrateAction.Get(), GetXrPath("/user/hand/right/output/haptic")});
-                bindings.push_back({m_vibrateAction.Get(), GetXrPath("/user/hand/left/output/haptic")});
-                bindings.push_back({m_exitAction.Get(), GetXrPath("/user/hand/right/input/menu/click")});
-                bindings.push_back({m_exitAction.Get(), GetXrPath("/user/hand/left/input/menu/click")});
+                bindings.push_back({m_poseAction.Get(), GetXrPath("/user/hand/left/input/aim/pose")});
+                bindings.push_back({m_poseAction.Get(), GetXrPath("/user/hand/right/input/aim/pose")});
+ 
 
                 XrInteractionProfileSuggestedBinding suggestedBindings{XR_TYPE_INTERACTION_PROFILE_SUGGESTED_BINDING};
                 suggestedBindings.interactionProfile = GetXrPath("/interaction_profiles/khr/simple_controller");
@@ -615,11 +639,11 @@ namespace {
                 CHECK_XRCMD(m_extensions.xrInitializeRemotingSpeechMSFT(m_session.Get(), &speechInitInfo));
             }
 
-            XrSessionActionSetsAttachInfo attachInfo{XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO};
-            std::vector<XrActionSet> actionSets = {m_actionSet.Get()};
-            attachInfo.countActionSets = (uint32_t)actionSets.size();
-            attachInfo.actionSets = actionSets.data();
-            CHECK_XRCMD(xrAttachSessionActionSets(m_session.Get(), &attachInfo));
+             XrSessionActionSetsAttachInfo attachInfo{XR_TYPE_SESSION_ACTION_SETS_ATTACH_INFO};
+               std::vector<XrActionSet> actionSets = {m_actionSet.Get()};
+                attachInfo.countActionSets = (uint32_t)actionSets.size();
+                attachInfo.actionSets = actionSets.data();
+                 CHECK_XRCMD(xrAttachSessionActionSets(m_session.Get(), &attachInfo));
 
             // Get the xrEnumerateViewConfig
             {
@@ -656,7 +680,7 @@ namespace {
 
         void CreateSpaces() {
             CHECK(m_session.Get() != XR_NULL_HANDLE);
-
+            InitializeCube(0);
             // Create a app space to bridge interactions and all holograms.
             {
                 if (m_optionalExtensions.UnboundedRefSpaceSupported) {
@@ -679,7 +703,8 @@ namespace {
                 createInfo.action = m_poseAction.Get();
                 createInfo.poseInActionSpace = xr::math::Pose::Identity();
                 createInfo.subactionPath = m_subactionPaths[side];
-                CHECK_XRCMD(xrCreateActionSpace(m_session.Get(), &createInfo, m_cubesInHand[side].Space.Put()));
+                CHECK_XRCMD(xrCreateActionSpace(m_session.Get(), &createInfo, m_Hand[side].Space.Put()));
+
             }
         }
 
@@ -776,6 +801,7 @@ namespace {
 
             // Preallocate view buffers for xrLocateViews later inside frame loop.
             m_renderResources->Views.resize(viewCount, {XR_TYPE_VIEW});
+    
         }
 
         struct SwapchainD3D11;
@@ -1042,43 +1068,134 @@ namespace {
                     getInfo.subactionPath = subactionPath;
                     CHECK_XRCMD(xrGetActionStateBoolean(m_session.Get(), &getInfo, &placeActionValue));
                 }
+                /*
+                 if (placeActionValue.isActive) {
+                
+                 // Use the pose at the historical time when the action happened to do the placement.
+                    const XrTime placementTime = placeActionValue.lastChangeTime;
 
-                // When select button is pressed, place the cube at the location of the corresponding hand.
+                    // Locate the hand in the scene.
+                    XrSpaceLocation handLocation{XR_TYPE_SPACE_LOCATION};
+                    CHECK_XRCMD(xrLocateSpace(m_Hand[side].Space.Get(), m_appSpace.Get(), placementTime, &handLocation));
+
+                    // Ensure we have tracking before placing a cube in the scene, so that it stays reliably at a physical location.
+                    if (xr::math::Pose::IsPoseValid(handLocation)) {
+                       
+                        if (placeActionValue.changedSinceLastSync && placeActionValue.currentState) {
+                            // When select button is pressed..
+                            if (side == 0)
+                                DEBUG_PRINT("BeginAction[LeftSide]");
+                            else
+                                DEBUG_PRINT("BeginAction[RightSide]");
+                            m_HandButtonPressed[side] = true;
+                            m_HandStartPos[side] = handLocation.pose;
+
+                        } else if (placeActionValue.changedSinceLastSync && !placeActionValue.currentState) {
+                            // When select button is Released..
+                            if (side == 0)
+                                DEBUG_PRINT("EndAction[LeftSide]");
+                            else
+                                DEBUG_PRINT("EndAction[RightSide]");
+
+                            m_HandButtonPressed[side] = false;
+                            m_HandEndPos[side] = handLocation.pose;
+                            
+
+                        } else if (placeActionValue.currentState && m_HandButtonPressed[side]) {
+                            m_HandEndPos[side] = handLocation.pose;
+                            
+                        }
+                    }
+                }*/
                 if (placeActionValue.isActive && placeActionValue.changedSinceLastSync && placeActionValue.currentState) {
+                    // When select button is pressed..
+                    if (side == 0)
+                        DEBUG_PRINT("BeginAction[LeftSide]");
+                    else
+                        DEBUG_PRINT("BeginAction[RightSide]");
+                    m_HandButtonPressed[side] = true;
+
                     // Use the pose at the historical time when the action happened to do the placement.
                     const XrTime placementTime = placeActionValue.lastChangeTime;
 
                     // Locate the hand in the scene.
                     XrSpaceLocation handLocation{XR_TYPE_SPACE_LOCATION};
-                    CHECK_XRCMD(xrLocateSpace(m_cubesInHand[side].Space.Get(), m_appSpace.Get(), placementTime, &handLocation));
-
-                    // Ensure we have tracking before placing a cube in the scene, so that it stays reliably at a physical location.
-                    if (!xr::math::Pose::IsPoseValid(handLocation)) {
-                        DEBUG_PRINT("Cube cannot be placed when positional tracking is lost.");
-                    } else {
-                        // Place a new cube at the given location and time, and remember output placement space and anchor.
-                        m_holograms.push_back(CreateHologram(handLocation.pose, placementTime));
+                    CHECK_XRCMD(xrLocateSpace(m_Hand[side].Space.Get(), m_appSpace.Get(), placementTime, &handLocation));
+                    if (xr::math::Pose::IsPoseValid(handLocation)) {
+                        m_HandStartPos[side] = handLocation.pose;
                     }
 
                     ApplyVibration();
-                }
+                } else if (placeActionValue.isActive && placeActionValue.changedSinceLastSync && !placeActionValue.currentState) {
+                    // When select button is Released..
+                    if (side == 0)
+                        DEBUG_PRINT("EndAction[LeftSide]");
+                    else
+                        DEBUG_PRINT("EndAction[RightSide]");
 
-                // This sample, when menu button is released, requests to quit the session, and therefore quit the application.
-                {
-                    XrActionStateBoolean exitActionValue{XR_TYPE_ACTION_STATE_BOOLEAN};
-                    XrActionStateGetInfo getInfo{XR_TYPE_ACTION_STATE_GET_INFO};
-                    getInfo.action = m_exitAction.Get();
-                    getInfo.subactionPath = subactionPath;
-                    CHECK_XRCMD(xrGetActionStateBoolean(m_session.Get(), &getInfo, &exitActionValue));
+                    m_HandButtonPressed[side] = false;
+                    // Use the pose at the historical time when the action happened to do the placement.
+                    const XrTime placementTime = placeActionValue.lastChangeTime;
+                    
+                    // Locate the hand in the scene.
+                    XrSpaceLocation handLocation{XR_TYPE_SPACE_LOCATION};
+                    CHECK_XRCMD(xrLocateSpace(m_Hand[side].Space.Get(), m_appSpace.Get(), placementTime, &handLocation));
 
-                    if (exitActionValue.isActive && exitActionValue.changedSinceLastSync && !exitActionValue.currentState) {
-                        CHECK_XRCMD(xrRequestExitSession(m_session.Get()));
-                        ApplyVibration();
+                    // Ensure we have tracking before placing a cube in the scene, so that it stays reliably at a physical location.
+                    if (xr::math::Pose::IsPoseValid(handLocation)) {
+                        m_HandEndPos[side] = handLocation.pose;
+                    }
+
+                } else if (placeActionValue.isActive && placeActionValue.currentState && m_HandButtonPressed[side]) {
+                    // Use the pose at the historical time when the action happened to do the placement.
+                    const XrTime placementTime = placeActionValue.lastChangeTime;
+                    
+                    // Locate the hand in the scene.
+                    XrSpaceLocation handLocation{XR_TYPE_SPACE_LOCATION};
+                    CHECK_XRCMD(xrLocateSpace(m_Hand[side].Space.Get(), m_appSpace.Get(), placementTime, &handLocation));
+
+                    // Ensure we have tracking before placing a cube in the scene, so that it stays reliably at a physical location.
+                    if (xr::math::Pose::IsPoseValid(handLocation)) {
+                        m_HandEndPos[side] = handLocation.pose;
                     }
                 }
+
+            }
+            //=================================================================
+            if (m_HandButtonPressed[LeftSide] && m_HandButtonPressed[RightSide]) {
+                float distStart = xrMathHelper::XrVector3f_Length(
+                    xrMathHelper::XrVector3f_Sub(m_HandStartPos[LeftSide].position, m_HandStartPos[RightSide].position));
+                float distEnd = xrMathHelper::XrVector3f_Length(
+                    xrMathHelper::XrVector3f_Sub(m_HandEndPos[LeftSide].position, m_HandEndPos[RightSide].position));
+
+                float diff = std::abs(distStart - distEnd);
+                if (diff >= 0.01) {
+                    DEBUG_PRINT("scaling...");
+                    m_graphicsPlugin->getOpenGLProgramPtr()->scale(distEnd - distStart);
+                    m_HandStartPos[LeftSide].position = m_HandEndPos[LeftSide].position;
+                    m_HandStartPos[RightSide].position = m_HandEndPos[RightSide].position;
+                }
+            } else if (m_HandButtonPressed[RightSide]) {
+               
+                XrVector3f dir = xrMathHelper::XrVector3f_Normalize(
+                    xrMathHelper::XrVector3f_Sub(m_HandEndPos[RightSide].position, m_HandStartPos[RightSide].position));
+                float length = xrMathHelper::XrVector3f_Length(
+                    xrMathHelper::XrVector3f_Sub(m_HandEndPos[RightSide].position, m_HandStartPos[RightSide].position));
+                if (length >= 0.01) {
+                    DEBUG_PRINT("translation...");
+                    XrVector3f dir = xrMathHelper::XrVector3f_Sub(m_HandEndPos[RightSide].position, m_HandStartPos[RightSide].position);
+                    m_graphicsPlugin->getOpenGLProgramPtr()->translation(dir);
+                    m_HandEndPos[RightSide].position = m_HandStartPos[RightSide].position;
+                }
+
+            } else if (m_HandButtonPressed[LeftSide]) {
+                DEBUG_PRINT("rotation...");
+                XrVector3f delta = xrMathHelper::XrVector3f_Sub(m_HandEndPos[LeftSide].position, m_HandStartPos[LeftSide].position);
+                m_graphicsPlugin->getOpenGLProgramPtr()->rotation(delta);
+                m_HandEndPos[LeftSide].position = m_HandStartPos[LeftSide].position;
+                
             }
         }
-
         void RenderFrame() {
             CHECK(m_session.Get() != XR_NULL_HANDLE);
 
@@ -1142,6 +1259,7 @@ namespace {
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
             XrRemotingFrameMirrorImageD3D11MSFT mirrorImageD3D11{
                 static_cast<XrStructureType>(XR_TYPE_REMOTING_FRAME_MIRROR_IMAGE_D3D11_MSFT)};
+
             mirrorImageD3D11.texture = m_window->GetNextSwapchainTexture();
 
             XrRemotingFrameMirrorImageInfoMSFT mirrorImageEndInfo{
@@ -1158,6 +1276,8 @@ namespace {
 #endif
         }
 
+        // end renderframe
+
         uint32_t AcquireAndWaitForSwapchainImage(XrSwapchain handle) {
             uint32_t swapchainImageIndex;
             XrSwapchainImageAcquireInfo acquireInfo{XR_TYPE_SWAPCHAIN_IMAGE_ACQUIRE_INFO};
@@ -1170,7 +1290,7 @@ namespace {
             return swapchainImageIndex;
         }
 
-        void InitializeSpinningCube(XrTime predictedDisplayTime) {
+        void InitializeCube(XrTime predictedDisplayTime) {
             auto createReferenceSpace = [session = m_session.Get()](XrReferenceSpaceType referenceSpaceType, XrPosef poseInReferenceSpace) {
                 xr::SpaceHandle space;
                 XrReferenceSpaceCreateInfo createInfo{XR_TYPE_REFERENCE_SPACE_CREATE_INFO};
@@ -1192,46 +1312,8 @@ namespace {
                 m_holograms.push_back(std::move(hologram));
                 m_mainCubeIndex = (uint32_t)m_holograms.size() - 1;
             }
-
-            {
-                // Initialize a small cube and remember the time when animation is started.
-                Hologram hologram{};
-                hologram.Cube.Scale = {0.1f, 0.1f, 0.1f};
-                hologram.Cube.Space = createReferenceSpace(XR_REFERENCE_SPACE_TYPE_LOCAL, xr::math::Pose::Translation({0, 0, -1}));
-                hologram.Cube.colorFilter = m_cubeColorFilter;
-                m_holograms.push_back(std::move(hologram));
-                m_spinningCubeIndex = (uint32_t)m_holograms.size() - 1;
-
-                m_spinningCubeStartTime = predictedDisplayTime;
-            }
         }
-
-        void UpdateSpinningCube(XrTime predictedDisplayTime) {
-            if (!m_mainCubeIndex || !m_spinningCubeIndex) {
-                // Deferred initialization of spinning cubes so they appear at right place for the first frame.
-                InitializeSpinningCube(predictedDisplayTime);
-            }
-
-            // Pause spinning cube animation when app loses 3D focus
-            if (IsSessionFocused()) {
-                auto convertToSeconds = [](XrDuration nanoSeconds) {
-                    using namespace std::chrono;
-                    return duration_cast<duration<float>>(duration<XrDuration, std::nano>(nanoSeconds)).count();
-                };
-
-                const XrDuration duration = predictedDisplayTime - m_spinningCubeStartTime;
-                const float seconds = convertToSeconds(duration);
-                const float angle = m_rotationDirection * DirectX::XM_PIDIV2 * seconds; // Rotate 90 degrees per second
-                const float radius = 0.5f;                                              // Rotation radius in meters
-
-                // Let spinning cube rotate around the main cube's y axis.
-                XrPosef pose;
-                pose.position = {radius * std::sin(angle), 0, radius * std::cos(angle)};
-                pose.orientation = xr::math::Quaternion::RotationAxisAngle({0, 1, 0}, angle);
-                m_holograms[m_spinningCubeIndex.value()].Cube.PoseInSpace = pose;
-            }
-        }
-
+  
         bool RenderLayer(XrTime predictedDisplayTime, XrCompositionLayerProjection& layer) {
             const uint32_t viewCount = (uint32_t)m_renderResources->ConfigViews.size();
 
@@ -1261,15 +1343,8 @@ namespace {
                     cube.colorFilter = m_cubeColorFilter;
                 }
             };
+            UpdateVisibleCube(m_holograms[m_mainCubeIndex.value()].Cube);
 
-            UpdateSpinningCube(predictedDisplayTime);
-
-            UpdateVisibleCube(m_cubesInHand[LeftSide]);
-            UpdateVisibleCube(m_cubesInHand[RightSide]);
-
-            for (auto& hologram : m_holograms) {
-                UpdateVisibleCube(hologram.Cube);
-            }
 
             m_renderResources->ProjectionLayerViews.resize(viewCount);
             if (m_optionalExtensions.DepthExtensionSupported) {
@@ -1328,7 +1403,8 @@ namespace {
                                          colorSwapchain.Images[colorSwapchainImageIndex].texture,
                                          depthSwapchain.Format,
                                          depthSwapchain.Images[depthSwapchainImageIndex].texture,
-                                         visibleCubes);
+                                         visibleCubes,
+                                         m_dxColorbuffer);
 
             XrSwapchainImageReleaseInfo releaseInfo{XR_TYPE_SWAPCHAIN_IMAGE_RELEASE_INFO};
             CHECK_XRCMD(xrReleaseSwapchainImage(colorSwapchain.Handle.Get(), &releaseInfo));
@@ -1340,19 +1416,22 @@ namespace {
             return true;
         }
 
+        // end RenderLayer
         void PrepareSessionRestart() {
-            m_mainCubeIndex = m_spinningCubeIndex = {};
+            m_mainCubeIndex  = {};
             m_holograms.clear();
             m_renderResources.reset();
             m_appSpace.Reset();
-            m_cubesInHand[LeftSide].Space.Reset();
-            m_cubesInHand[RightSide].Space.Reset();
+          
+            m_Hand[LeftSide].Space.Reset();
+            m_Hand[RightSide].Space.Reset();
             m_session.Reset();
             m_sessionRunning = false;
 
 #if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
             m_graphicsPlugin->ClearView(m_window->GetNextSwapchainTexture(), clearColor);
             m_window->PresentSwapchain();
+            // m_graphicsPlugin->UnregisterSharedObject();
 
             UpdateWindowTitleWin32();
 #endif
@@ -1452,6 +1531,7 @@ namespace {
 
         const std::string m_applicationName;
         const std::unique_ptr<sample::IGraphicsPluginD3D11> m_graphicsPlugin;
+
         const sample::AppOptions m_options;
 
         bool m_usingRemotingRuntime{false};
@@ -1475,22 +1555,23 @@ namespace {
 
         struct Hologram {
             sample::Cube Cube;
+
             xr::SpatialAnchorHandle Anchor;
         };
         std::vector<Hologram> m_holograms;
-
         std::optional<uint32_t> m_mainCubeIndex;
-        std::optional<uint32_t> m_spinningCubeIndex;
-        XrTime m_spinningCubeStartTime;
-
+     
         constexpr static uint32_t LeftSide = 0;
         constexpr static uint32_t RightSide = 1;
         std::array<XrPath, 2> m_subactionPaths{};
-        std::array<sample::Cube, 2> m_cubesInHand{};
+        std::array<sample::Cube, 2> m_Hand{};
+
+        std::array<bool, 2> m_HandButtonPressed{};
+        std::array<XrPosef, 2> m_HandStartPos{};
+        std::array<XrPosef, 2> m_HandEndPos{};
 
         xr::ActionSetHandle m_actionSet;
         xr::ActionHandle m_placeAction;
-        xr::ActionHandle m_exitAction;
         xr::ActionHandle m_poseAction;
         xr::ActionHandle m_vibrateAction;
 
@@ -1518,7 +1599,7 @@ namespace {
 
         ID3D11Device* m_device = nullptr;
         std::unique_ptr<RenderResources> m_renderResources{};
-
+        ID3D11Texture2D* m_dxColorbuffer;
         bool m_sessionRunning{false};
         XrSessionState m_sessionState{XR_SESSION_STATE_UNKNOWN};
 
@@ -1544,6 +1625,7 @@ namespace sample {
     std::unique_ptr<sample::IOpenXrProgram> CreateOpenXrProgram(std::string applicationName,
                                                                 std::unique_ptr<sample::IGraphicsPluginD3D11> graphicsPlugin,
                                                                 const sample::AppOptions& options) {
-        return std::make_unique<ImplementOpenXrProgram>(std::move(applicationName), std::move(graphicsPlugin), options);
+        return std::make_unique<ImplementOpenXrProgram>(
+            std::move(applicationName), std::move(graphicsPlugin), options);
     }
 } // namespace sample

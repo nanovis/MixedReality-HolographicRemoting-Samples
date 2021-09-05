@@ -30,6 +30,7 @@ namespace sample {
         void SetWindowTitle(std::wstring title);
 
         ID3D11Texture2D* GetNextSwapchainTexture();
+        ID3D11Texture2D* GetOpenGLSwapchainTexture();
         void PresentSwapchain();
 
         void OnClosed();
@@ -41,7 +42,7 @@ namespace sample {
 
         HWND m_hWnd = nullptr;
         winrt::com_ptr<IDXGISwapChain1> m_swapchain;
-
+        winrt::com_ptr<IDXGISwapChain1> m_swapchainOGL;
         KeyPressHandler m_keyPressedHandler;
         bool m_isClosed;
     };
