@@ -7,9 +7,9 @@
 #include "glew.h"
 #include "wglew.h"
 #include <iostream>
-
-#define SCREEN_WIDTH 1000
-#define SCREEN_HEIGHT 1000
+// resolution for two-eye rendering (1440x936 per eye)
+#define SCREEN_WIDTH 2880
+#define SCREEN_HEIGHT 936
 
 
 class xrMathHelper {
@@ -93,8 +93,11 @@ struct OpenGLProgram {
     GLuint glSharedTextur[1];
 
     DirectX::XMMATRIX g_matModel;
-    DirectX::XMMATRIX g_matView;
-    DirectX::XMMATRIX g_matProjection;
+    DirectX::XMMATRIX g_matView_0;
+    DirectX::XMMATRIX g_matView_1;
+    DirectX::XMMATRIX g_matProjection_0;
+    DirectX::XMMATRIX g_matProjection_1;
+
     float fov = 70.0f;
     std::map<std::string, int> uniformLocations;
     //===============================

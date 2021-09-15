@@ -67,8 +67,10 @@ namespace {
             // 1- create Directx texture to shared it with opengl
             // Setup texture description .
             D3D11_TEXTURE2D_DESC textureDesc;
-            textureDesc.Height = 1000;
-            textureDesc.Width = 1000;
+            // Resolution for two-eye rendering (1440x936 per eye)
+            textureDesc.Width = 2880;
+            textureDesc.Height = 936;
+
             textureDesc.MipLevels = 0;
             textureDesc.ArraySize = 1;
             textureDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;

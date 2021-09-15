@@ -96,7 +96,7 @@ namespace {
 
         // Separate entrypoints for the vertex and pixel shader functions.
         constexpr char ShaderHlsl[] = R"_(
-           Texture2D texture_: register(t0);
+          Texture2D texture_: register(t0);
           SamplerState sampler_: register(s0);
            struct VSOutput {
                 float4 Pos : SV_POSITION;
@@ -123,13 +123,17 @@ namespace {
                 VSOutput output;
                 output.Pos = float4(input.Pos,1);
                 output.Color = input.Color;
-                output.Texcoord = input.Texcoord;
+                // Map left part of the texture to the left eye and right part of the texture to the right eye
+                if (input.instId == 0) { // left eye
+                    output.Texcoord = float2(input.Texcoord.x * 0.5, input.Texcoord.y);
+                } else { // right eye
+                    output.Texcoord = float2(0.5 + input.Texcoord.x * 0.5, input.Texcoord.y);
+                }
                 output.viewId = input.instId;
                 return output;
             }
             float4 MainPS(VSOutput input) : SV_TARGET {
                 return texture_.Sample(sampler_ , input.Texcoord);
-                
             }
             )_";
     } // namespace CubeShader
@@ -305,22 +309,30 @@ namespace {
               m_deviceContext->PSSetShaderResources(0, 1, &textureView);
               m_deviceContext->PSSetSamplers(0, 1, &samplerState);
            //=====================================================     
-            // send projection matrix to Opnegl 
+            // send view and projection matrices for both eyes to Opnegl 
             CubeShader::ViewProjectionConstantBuffer viewProjectionCBufferData{};
-            for (uint32_t k = 0; k < viewInstanceCount; k++) {
 
-                m_openGLProgram->g_matView = xr::math::LoadInvertedXrPose(viewProjections[k].Pose);
-                m_openGLProgram->g_matProjection = ComposeProjectionMatrix(viewProjections[k].Fov, viewProjections[k].NearFar);
+            // Set view projection matrix for left view
+            m_openGLProgram->g_matView_0 = xr::math::LoadInvertedXrPose(viewProjections[0].Pose);
+            m_openGLProgram->g_matProjection_0 = ComposeProjectionMatrix(viewProjections[0].Fov, viewProjections[0].NearFar);
 
-                // Set view projection matrix for each view, transpose for shader usage.
-                DirectX::XMStoreFloat4x4(&viewProjectionCBufferData.ViewProjection[k],
-                                         DirectX::XMMatrixTranspose(m_openGLProgram->g_matView * m_openGLProgram->g_matProjection));
-            }
+            // transpose left eye matrix for shader usage.
+            DirectX::XMStoreFloat4x4(&viewProjectionCBufferData.ViewProjection[0],
+                                     DirectX::XMMatrixTranspose(m_openGLProgram->g_matView_0 * m_openGLProgram->g_matProjection_0));
+
+            // Set view projection matrix for right view
+            m_openGLProgram->g_matView_1 = xr::math::LoadInvertedXrPose(viewProjections[1].Pose);
+            m_openGLProgram->g_matProjection_1 = ComposeProjectionMatrix(viewProjections[1].Fov, viewProjections[1].NearFar);
+
+            // transpose right eye matrix for shader usage.
+            DirectX::XMStoreFloat4x4(&viewProjectionCBufferData.ViewProjection[1],
+                                     DirectX::XMMatrixTranspose(m_openGLProgram->g_matView_1 * m_openGLProgram->g_matProjection_1));
+
             m_deviceContext->UpdateSubresource(m_viewProjectionCBuffer.get(), 0, nullptr, &viewProjectionCBufferData, 0, 0);
             // Start  Rendering OpenGL
             //---------------------------------------------------------
             m_openGLProgram->render();
-          //---------------------------------------------------------
+            //---------------------------------------------------------
 
             // Set DirectX square primitive data.
             const UINT strides[] = {sizeof(CubeShader::Vertex)};

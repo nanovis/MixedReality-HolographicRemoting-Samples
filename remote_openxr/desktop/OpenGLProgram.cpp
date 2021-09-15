@@ -1,4 +1,4 @@
-﻿#include"OpenGLProgram.h"
+#include"OpenGLProgram.h"
 
 void OpenGLProgram::createTriangleProgram() {
     unsigned int vertexShader;
@@ -262,9 +262,12 @@ void OpenGLProgram::initOpenGLProgram(ID3D11Device* m_device,ID3D11Texture2D* m_
     glDisable(GL_DEPTH_TEST);
 
     g_matModel = DirectX::XMMatrixIdentity();
-    g_matView = DirectX::XMMatrixLookAtLH(
+    g_matView_0 = DirectX::XMMatrixLookAtLH(
         DirectX::XMVectorSet(0.0f, 0.0f, 2, 1.0f), DirectX::XMVectorZero(), DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
-    g_matProjection = DirectX::XMMatrixPerspectiveFovLH(fov, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 1.0f, 1000.0f);
+    g_matProjection_0 = DirectX::XMMatrixPerspectiveFovLH(fov, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 1.0f, 1000.0f);
+    g_matView_1 = DirectX::XMMatrixLookAtLH(
+        DirectX::XMVectorSet(0.0f, 0.0f, 2, 1.0f), DirectX::XMVectorZero(), DirectX::XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f));
+    g_matProjection_1 = DirectX::XMMatrixPerspectiveFovLH(fov, (float)SCREEN_WIDTH / (float)SCREEN_HEIGHT, 1.0f, 1000.0f);
 
     translationMat = DirectX::XMMatrixTranslation(m_position.x, m_position.y, m_position.z);
     scalingMat = DirectX::XMMatrixScaling(m_scale.x, m_scale.y, m_scale.z);
@@ -295,21 +298,35 @@ void OpenGLProgram::render() {
     glUseProgram(triangleProgram);
     glBindFramebuffer(GL_FRAMEBUFFER, fbo);
     setUniform(triangleProgram, "ModelMatrix", g_matModel);
-    setUniform(triangleProgram, "ViewMatrix", g_matView);
-    setUniform(triangleProgram, "ProjMatrix", g_matProjection);
+    // set left eye view and projection matices
+    setUniform(triangleProgram, "ViewMatrix", g_matView_0);
+    setUniform(triangleProgram, "ProjMatrix", g_matProjection_0);
 
     glClear(GL_COLOR_BUFFER_BIT);
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, glSharedTextur[0]);
+    // set left eye viewport
+    glViewport(0, 0, SCREEN_WIDTH / 2, SCREEN_HEIGHT);
 
     glBindVertexArray(triangleVAO);
+    // draw left eye image in left part of the texture
     glDrawArrays(GL_TRIANGLES, 0, 3);
+
+    // set right eye view and projection matrices
+    setUniform(triangleProgram, "ViewMatrix", g_matView_1);
+    setUniform(triangleProgram, "ProjMatrix", g_matProjection_1);
+
+    // set right eye viewport
+    glViewport(SCREEN_WIDTH / 2, 0, SCREEN_WIDTH / 2, SCREEN_HEIGHT);
+
+    // draw right eye image in right part of the texture
+    glDrawArrays(GL_TRIANGLES, 0, 3);
+
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glBindVertexArray(0);
     //++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     //++++++++++++++++++ Pass 2 ++++++++++++++++++++++++++++++
     glUseProgram(fullScreenRectProgram);
     glClearColor(0.0, 0.0, 0.0, 1.0);
+    glViewport(0, 0, 1000, 1000);
     glClear(GL_COLOR_BUFFER_BIT);
     glEnable(GL_TEXTURE_2D);
     // bind Texture
