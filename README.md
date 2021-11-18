@@ -18,11 +18,11 @@ We modified  [microsoft/MixedReality-HolographicRemoting-Samples](https://github
  ## Output
   The below Windows show the rendered scene from Both OpenGL and Hololens2
 
-<img src="https://github.com/nanovis/Opengl-on-Hololens2/blob/main/Images/OpenGL%20win.png" width="300" height="200"> <img src="https://github.com/nanovis/Opengl-on-Hololens2/blob/main/Images/DirectX%20Win.png" width="300" height="200">
+<img src="https://github.com/nanovis/MixedReality-HolographicRemoting-Samples/blob/main/remote_openxr/desktop/Images/OpenGL%20win.png" width="300" height="200"> <img src="https://github.com/nanovis/MixedReality-HolographicRemoting-Samples/blob/main/remote_openxr/desktop/Images/DirectX%20Win.png" width="300" height="200">
 
 ### Hololens2 View 
 
-<img src="https://github.com/nanovis/Opengl-on-Hololens2/blob/main/Images/Hololens.png" width="300" height="100">
+<img src="https://github.com/nanovis/MixedReality-HolographicRemoting-Samples/blob/main/remote_openxr/desktop/Images/Hololens.png" width="300" height="100">
 
 
 
@@ -38,5 +38,18 @@ Both hands -> scaling.
 
 Close your thumbs and your index finger to start the interaction. Follow the hand gesture in the following image:
   
-<img src="https://github.com/nanovis/Opengl-on-Hololens2/blob/main/Images/movment.jpg" width="400" height="400">
+<img src="https://github.com/nanovis/MixedReality-HolographicRemoting-Samples/blob/main/remote_openxr/desktop/Images/movment.jpg" width="400" height="400">
+
+
+## Citation
+If you use our code in a research project leading to a publication, please cite it using the following BibTex entry
+
+```bibtex
+@misc{Nanovis:OpenGLHolographicRemoting,
+ author = {Shorouq Altamimi, Ruwayda Alharbi, Ondrej Strnad, Ivan Viola},
+ title = {OpenGL Holographic Remoting},
+ howpublished = {\url{https://www.nanovis.org/Holographic-Remoting.html}},
+ year = {2021} }
+}
+```
 
